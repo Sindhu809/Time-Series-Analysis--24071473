@@ -34,7 +34,7 @@ This the report file you can download it and can have all the knowledge about th
 This has the whole coding part of the assignment.This is the main notebook file. It contains the full Python code for data cleaning, EDA, stationarity tests, forecasting models, plots and evaluation metrics.
 
 
-**time_series_60min_singleindex_filtered-2(7).csv**
+**time_series_60min_singleindex_filtered-2.csv**
 
 This is the electricity demand dataset used in the project.
 

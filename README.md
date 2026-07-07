@@ -32,7 +32,11 @@ This the report file you can download it and can have all the knowledge about th
 **SINDHU GADDAM.IPYNB** 
 
 This has the whole coding part of the assignment.This is the main notebook file. It contains the full Python code for data cleaning, EDA, stationarity tests, forecasting models, plots and evaluation metrics.
-
+how to open:
+1. Open `SINDHU GADDAM.ipynb` in Google Colab.
+2. Upload the CSV file to Colab files with this exact name:
+`time_series_60min_singleindex_filtered-2.csv`
+3. Run all cells from top to bottom.
 
 **time_series_60min_singleindex_filtered-2.csv**
 

@@ -29,27 +29,6 @@ Seasonal naive produced the best test accuracy. Random Forest was the strongest 
 
 Negative skill means the model was less accurate than seasonal naive. Bias in the notebook is defined as `actual - forecast`; therefore, negative bias indicates overprediction.
 
-## Repository structure
-
-```text
-.
-├── .github/workflows/notebook-check.yml
-├── data/
-│   └── README.md
-├── notebooks/
-│   └── Sindhu.ipynb
-├── reports/
-│   └── Sindhu.pdf
-├── .gitignore
-├── CITATION.cff
-├── CONTRIBUTING.md
-├── LICENSE
-├── README.md
-└── requirements.txt
-```
-
-The notebook creates `reports/figures/` and additional CSV result files when executed from the repository root.
-
 ## Data
 
 The demand series is downloaded automatically from the [Open Power System Data time-series package](https://data.open-power-system-data.org/time_series/2020-10-06/). The analysis uses:

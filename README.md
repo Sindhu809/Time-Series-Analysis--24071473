@@ -1,191 +1,134 @@
-# Time-Series-Analysis--24071473
-This assignment is about time Series forecasting on German electricity data
+German Electricity Demand Forecasting
+
+Time-series case study comparing statistical, feature-based and neural forecasting methods on German electricity demand.
+
+**Student:** Sindhu Gaddam  
+**Student number:** 24071473  
+**Assessment:** Assignment 1 - Time Series Modelling Case Study
+
+## Research question
+
+Which forecasting method remains reliable when the forecast origin is fixed and the following 104 weeks are genuinely unknown?
+
+The project compares simple benchmarks with SARIMA, SARIMAX, Random Forest and a recursive LSTM. Every model is evaluated over the same blind two-year test period, with seasonal naive used as the principal benchmark.
+
+## Main result
 
-## About This Project
+Seasonal naive produced the best test accuracy. Random Forest was the strongest learned model but did not improve on the benchmark.
+
+| Model | RMSE  | MAE  | MAPE | RMSE skill vs seasonal naive |
+|---|---:|---:|---:|---:|
+| Seasonal naive | **2,988.25** | **2,288.49** | **4.36%** | **0.00%** |
+| Random Forest | 3,153.71 | 2,405.64 | 4.62% | -5.54% |
+| Mean | 4,402.06 | 3,789.85 | 6.98% | -47.31% |
+| Drift | 4,466.49 | 3,850.78 | 7.14% | -49.47% |
+| Naive | 4,475.77 | 3,858.15 | 7.15% | -49.78% |
+| SARIMAX | 7,013.83 | 5,879.84 | 11.11% | -134.71% |
+| SARIMA | 8,901.24 | 7,636.99 | 14.36% | -197.87% |
+| Recursive LSTM | 10,236.18 | 9,179.25 | 16.15% | -242.55% |
 
-This project is for the ADS1 time series assignment. The main aim is to forecast German electricity demand using different time series and machine learning models.
+Negative skill means the model was less accurate than seasonal naive. Bias in the notebook is defined as `actual - forecast`; therefore, negative bias indicates overprediction.
 
-The project uses German electricity load data from Open Power System Data. The original data is hourly, but most of the models in this project use weekly average electricity demand. Temperature data for Berlin is also used as an extra variable to check whether weather helps improve the forecast.
+## Repository structure
 
-## Project Aim
+```text
+.
+├── .github/workflows/notebook-check.yml
+├── data/
+│   └── README.md
+├── notebooks/
+│   └── Sindhu.ipynb
+├── reports/
+│   └── Sindhu.pdf
+├── .gitignore
+├── CITATION.cff
+├── CONTRIBUTING.md
+├── LICENSE
+├── README.md
+└── requirements.txt
+```
 
-The aim of this work is to understand the pattern of German electricity demand and compare different forecasting models.
+The notebook creates `reports/figures/` and additional CSV result files when executed from the repository root.
 
-The project looks at these main points:
+## Data
 
-- Preparing the electricity demand data
-- Creating weekly and hourly time series
-- Checking trend and seasonality
-- Testing stationarity using ADF, KPSS, ACF and PACF
-- Building simple benchmark forecasts
-- Building SARIMA and SARIMAX models
-- Adding temperature and holiday variables
-- Building a Random Forest regression model
-- Building an LSTM model using hourly data
-- Comparing all models using RMSE, MAE and MAPE
+The demand series is downloaded automatically from the [Open Power System Data time-series package](https://data.open-power-system-data.org/time_series/2020-10-06/). The analysis uses:
 
-## Files in This Repository
+- timestamp: `utc_timestamp`
+- response: `DE_load_actual_entsoe_transparency`
+- period: 1 January 2015 to 1 October 2020
+- raw frequency: hourly
+- modelling frequency: Sunday-ending weekly mean
+- completeness rule: retain weeks containing at least 98% of 168 expected hours
 
-**SINDHU GADDAM**
-This the report file you can download it and can have all the knowledge about the assignment and the outcomes from the assignment.
+The notebook also obtains historical Berlin temperature from the [Open-Meteo archive API](https://archive-api.open-meteo.com/v1/archive) and constructs German holiday variables with the `holidays` Python package.
 
-**SINDHU GADDAM.IPYNB** 
+Raw data are intentionally excluded from Git because they are large and reproducibly downloadable. See [`data/README.md`](data/README.md).
 
-This has the whole coding part of the assignment.This is the main notebook file. It contains the full Python code for data cleaning, EDA, stationarity tests, forecasting models, plots and evaluation metrics.
-how to open:
-1. Open `SINDHU GADDAM.ipynb` in Google Colab.
-2. Upload the CSV file to Colab files with this exact name:
-`time_series_60min_singleindex_filtered-2.csv`
-3. Run all cells from top to bottom.
+## Methods
 
-**time_series_60min_singleindex_filtered-2.csv**
+The executed notebook contains the complete analysis:
 
-This is the electricity demand dataset used in the project.
+1. Download, validate and clean the hourly load data.
+2. Aggregate hourly demand to daily and weekly means.
+3. Explore time, intraday, weekday and annual patterns.
+4. Test stationarity using ADF and KPSS.
+5. inspect original and differenced series with ACF and PACF.
+6. Perform additive seasonal decomposition.
+7. Construct temperature and holiday covariates.
+8. Create chronological train, validation and test partitions.
+9. Fit mean, naive, drift and seasonal-naive benchmarks.
+10. Tune SARIMA over 147 ordinary-order combinations.
+11. Select SARIMAX covariates using an inner validation period.
+12. Tune six recursively evaluated Random Forest configurations.
+13. Tune three LSTM architectures and generate a recursive hourly forecast.
+14. Compare every model using RMSE, MAE, MAPE, MASE, bias and benchmark-relative skill.
 
-**README.md**
+## Reproducibility and leakage controls
 
-This file explains the project, methods, files and results.
+- The final 104 weeks are held out as a blind test period.
+- Model selection and hyperparameter tuning use training/validation data only.
+- Scalers are fitted on training partitions only.
+- Demand lags and rolling features contain only information available before the target.
+- Recursive forecasts append predictions rather than realised test demand.
+- Random seeds are fixed at 42 where supported.
+- Realised future temperature makes the reported SARIMAX forecast conditional; a production system would require origin-available weather forecasts.
 
-## Dataset
+## Installation
 
-The dataset is from Open Power System Data. It contains hourly electricity data for different European countries.
+Python 3.10 or 3.11 is recommended. TensorFlow installation can vary by operating system; Google Colab is the simplest execution environment.
 
-For this project, only the German electricity demand column was used:
+```bash
+git clone https://github.com/Sindhu809/Time-Series-Analysis--24071473.git
+cd Time-Series-Analysis--24071473
 
-DE_load_actual_entsoe_transparency
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
 
-The data was filtered from January 2015 to October 2020. The hourly data was converted into weekly values for the benchmark, SARIMA, SARIMAX and Random Forest models. The LSTM model used hourly data.
+## Running the analysis
 
-## Work Done in the Notebook
+Start Jupyter from the repository root so the notebook writes to the expected `data/` and `reports/` directories:
 
-## 1. Data Preparation
+```bash
+jupyter lab notebooks/Sindhu.ipynb
+```
 
-The dataset was loaded using pandas. The timestamp column was converted into datetime format and set as the index. The German electricity demand column was selected and renamed to make the analysis easier.
+Then select **Run All Cells**. A network connection is required during the first run to download electricity and weather data. The SARIMA search and recursive LSTM forecast can take considerable time.
 
-The hourly data was also converted into weekly average demand for most of the forecasting models.
+For Google Colab, upload `notebooks/Sindhu.ipynb`, choose a TensorFlow-compatible runtime and run the notebook from the first cell in order.
 
-## 2. Exploratory Data Analysis
+## Key analytical conclusions
 
-Initial plots were created to understand how German electricity demand changes over time. The plots show clear yearly seasonality in the electricity demand series.
+- The weekly series shows strong annual dependence near lag 52.
+- The level series passes both ADF and KPSS, so the selected highly differenced SARIMA specification is interpreted critically.
+- Weather and holiday covariates reduce SARIMAX RMSE by 21.20% relative to SARIMA but do not beat seasonal naive.
+- Random Forest is a credible challenger, although recursive feature replacement produces accumulating errors.
+- The LSTM learns short-run hourly structure but becomes unstable over 17,472 recursive steps.
+- Seasonal naive is recommended for operational two-year weekly point forecasting, supported by bias monitoring and empirically calibrated uncertainty.
 
-## 3. Stationarity Testing
+## Report
 
-Stationarity was checked using:
-
-- ADF test
-- KPSS test
-- ACF plot
-- PACF plot
-- Differencing checks
-
-These tests helped in deciding the SARIMA and SARIMAX model settings.
-
-## 4. Benchmark Forecasts
-
-The following benchmark models were used:
-
-- Mean Forecast
-- Naive Forecast
-- Seasonal Naive Forecast
-- Drift Forecast
-
-The Seasonal Naive model gave the best benchmark result. Because of this, it was used as the main baseline for comparing the other models.
-
-## 5. SARIMA Model
-
-SARIMA was used because the weekly electricity demand data has seasonal behaviour. A grid search was done for different values of p, d and q. The best AIC model was tested, but it did not give the best forecast result. So, forecast accuracy was also considered when selecting the final SARIMA model.
-
-The final SARIMA model performed better than the Seasonal Naive benchmark.
-
-## 6. SARIMAX Model
-
-SARIMAX was used to add temperature as an external variable. Berlin temperature was used as a representative temperature for Germany.
-
-The SARIMAX model showed that temperature has some explanatory value, but it did not improve much compared with the SARIMA model.
-
-The temperature forecast is treated as a conditional forecast because actual future temperature is not normally known at the forecast origin.
-
-## 7. SARIMAX with Holidays
-
-Holiday variables were also tested. Holidays are useful because they are known in advance, so they can be safely used for forecasting.
-
-Adding holidays improved the SARIMAX result.
-
-## 8. Random Forest Model
-
-A Random Forest regression model was used as the feature-based model. It used features such as:
-
-- Weekly temperature
-- Load lag 1
-- Load lag 2
-- Load lag 3
-- Load lag 52
-- Week of year
-- Month
-
-The lag features were created carefully so that future values were not used in the training data.
-
-Random Forest performed better than the weekly statistical models.
-
-## 9. LSTM Model
-
-An LSTM model was built using hourly electricity demand data. This model gave the lowest error overall.
-
-However, LSTM is more complex and harder to explain than SARIMA and Random Forest. It also needs more computation and tuning.
-
-## Model Results
-
-| Model | RMSE | MAE | MAPE |
-| Seasonal Naive | 3006.76 | 2318.52 | 4.41 |
-| SARIMA | 2788.72 | 2149.28 | 4.09 |
-| SARIMAX | 2847.08 | 2155.22 | 4.12 |
-| SARIMAX + Holidays | 2670.12 | 1955.78 | 3.75 |
-| Random Forest | 2475.07 | 1789.35 | 3.44 |
-| LSTM | 1166.40 | 893.31 | 1.66 |
-
-## Main Findings
-
-The Seasonal Naive model was a strong benchmark because the electricity demand data has clear yearly seasonality.
-
-SARIMA improved the forecast compared with Seasonal Naive. SARIMAX with temperature did not improve much compared with SARIMA, but SARIMAX with holidays gave a better result.
-
-Random Forest gave better results than the statistical weekly models because it used lag features and calendar features.
-
-LSTM gave the best accuracy overall, but it used hourly data and is more complex to understand and maintain.
-
-## Best Model for Use
-
-For real use, Random Forest is a good balanced model because it gives better accuracy than SARIMA and SARIMAX and is easier to maintain than LSTM.
-
-LSTM is best if only accuracy is important, but it is harder to explain. SARIMA is still useful because it is more interpretable and gives confidence intervals.
-
-## How to Run
-
-1. Download the repository.
-2. Keep the dataset file in the same folder as the notebook.
-3. Open the notebook file named **SINDHU GADDAM**.
-4. Run the notebook cells from top to bottom.
-5. The notebook will generate the plots, model results and evaluation metrics.
-
-## Libraries Used
-
-The main Python libraries used are:
-
-- pandas
-- numpy
-- matplotlib
-- statsmodels
-- scikit-learn
-- tensorflow / keras
-
-## Important Notes
-
-- The weekly models use the last 104 weeks as the test period.
-- The LSTM model uses hourly data.
-- Temperature values in the test period should be treated carefully because actual future temperature is not available in a real forecast.
-- Holiday variables are safe to use because holidays are known in advance.
-- The results in the report should match the values produced by the notebook.
-
-## Conclusion
-
-This project shows that German electricity demand has strong seasonal patterns. Simple models are useful as a baseline, but advanced models can improve the forecast. Random Forest gives a good balance between accuracy and simplicity, while LSTM gives the best accuracy but is more complex.
+The final eight-page report is available at [`reports/Sindhu.pdf`](reports/Sindhu.pdf). It contains the figures, model comparison, answers to the required analysis questions, limitations, operational recommendation and future work.
